@@ -1,4 +1,5 @@
-import os, re
+import os
+import re
 from typing import Dict, Any
 
 from app.infrastructure.importers.file_importer import FileImporter
@@ -110,7 +111,7 @@ class ImportService:
         obsługuje:
             - "44.0 kg"
             - "79,5 kg"
-            - "209 cm"
+            - "209 cm -> 209 -> 209.0"
             - "3"
             - "1,0"
         Jeśli nie da się odczytać liczby, zwraca None.
@@ -130,7 +131,7 @@ class ImportService:
         value = value.lower()                             # zamieniamy tekst na małe litery
         value = value.replace(",", ".")          # zamieniamy , na . gdyż python potrzebuje kroppki do zrobienia wartosci float
 
-        match = re.search(r"(\d+)\.(\d+)", value)   #słuzy do znajdowanai cyfry w teksice \d+ to zajduje np 10 a \.(\d+ znajduje 0.5 co daje nam całośc 10.5
+        match = re.search(r"\d+(\.\d+)?", value)   #słuzy do znajdowanai cyfry w teksice \d+ to zajduje np 10 a \.(\d+ znajduje 0.5 co daje nam całośc 10.5
 
         if not match:                                     # jesli nie znaleziono liczby wyrzyca None
             return None
