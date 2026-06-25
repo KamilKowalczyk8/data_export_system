@@ -1,0 +1,60 @@
+services:
+
+  db:
+    image: postgres:15-alpine
+    container_name: data_product_db
+    restart: unless-stopped       # automatyczny restart kontenera jesli będzie jakis błąd poza naszym zamierzonym wyłączeniem
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminhaslo
+      POSTGRES_DB: product_data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d product_data"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: data_export_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:adminhaslo@db:5432/product_data
+    volumes:
+      - ./app:/app/app    # pomost pomiędzy dockerem i plikami i po kazdym zmianie kodu sam aktualizuje dane
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network
+
+
+  frontend:
+    image: nginx:alpine
+    container_name: data_export_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro   # docker nie skopiował plików tylko stworzył pomost pomiedzy nim dzieki temu nie trzeba resetowac kontenera za kazdym razem
+    depends_on:
+      - api
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

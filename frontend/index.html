@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Importu Danych | Panel</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Baza Produktów</h1>
+
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="supplier">1. Wybierz profil dostawcy</label>
+                <select id="supplier" required>
+                    <option value="" disabled selected>-- Wybierz z listy --</option>
+                    <option value="LENART">LENART (CSV)</option>
+                    <option value="MEBLEOSIEK">Meble Osiek (Excel)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="fileInput">2. Wgraj Plik</label>
+                <input type="file" id="fileInput" accept=".csv, .xlsx, .xls" required>
+            </div>
+
+            <button type="submit" id="submitBtn">Rozpocznij Import</button>
+        </form>
+
+        <div id="status-box">
+            <strong id="status-title"></strong>
+            <p id="status-message" style="margin: 0.5rem 0 0 0;"></p>
+            <ul id="results-list"></ul>
+        </div>
+    </div>
+
+</body>
+</html>

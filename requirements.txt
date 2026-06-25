@@ -1,0 +1,21 @@
+# --- Biblioteki ---
+
+# przetwarzanie danych i plików
+pandas==2.2.0
+openpyxl==3.1.2
+
+# baza danych
+SQLAlchemy==2.0.25
+psycopg2-binary==2.9.9
+
+# walidacja danych
+pydantic==2.6.0
+
+# backendowe api
+fastapi==0.110.0            # framework backendowy zebym mógł wysyłać zapytania od odbierać z przeglądarki
+uvicorn[standard]==0.27.1   # silnik to trzymania mojej aplikacji w pętli
+python-multipart==0.0.9     # biblioteka do obierania plików z formularza html
+
+# --- Narzędzia deweloperskie ---
+ruff==0.2.2 # automatycznie formatuje kod (ustawia odpowiednie wcięcia, dodaje spacje, układa importy) oraz wyłapuje błędy logiczne (np. nieużywane zmienne).
+mypy==1.8.0 # służy do statycznego typowania (czyli określa, że np. cena to float, a nie byle jaka wartość. Przed uruchomieniem kodu sprawdzi, czy nigdzie nie pomyliliśmy typów)

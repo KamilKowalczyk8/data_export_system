@@ -1,0 +1,17 @@
+# Środowisko wirtualne Pythona
+.venv/
+venv/
+env/
+
+# Ustawienia środowiska PyCharm
+.idea/
+
+# Pliki tymczasowe Pythona (generowane w locie)
+__pycache__/
+*.py[cod]
+
+# Dane i pliki Excel (nie wypychamy ciężkich baz i plików klientów)
+data/
+
+# Pliki konfiguracyjne lokalnych systemów
+.env
