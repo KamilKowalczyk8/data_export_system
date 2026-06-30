@@ -44,7 +44,7 @@ services:
     container_name: data_export_frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./frontend:/usr/share/nginx/html:ro   # docker nie skopiował plików tylko stworzył pomost pomiedzy nim dzieki temu nie trzeba resetowac kontenera za kazdym razem
     depends_on:

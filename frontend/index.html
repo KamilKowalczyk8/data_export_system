@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <script src="script.js" defer></script>
+    <script src="js/script.js" defer></script>
 </head>
 <body>
 
@@ -29,13 +29,30 @@
                 <input type="file" id="fileInput" accept=".csv, .xlsx, .xls" required>
             </div>
 
-            <button type="submit" id="submitBtn">Rozpocznij Import</button>
+            <button type="submit" id="submitBtn">Wczytaj podgląd importu</button>
+            <button type="button" id="showCurrentBtn" class="secondary-btn">
+                Pokaż aktualne dane
+            </button>
         </form>
 
         <div id="status-box">
             <strong id="status-title"></strong>
             <p id="status-message" style="margin: 0.5rem 0 0 0;"></p>
             <ul id="results-list"></ul>
+        </div>
+
+        <div id="preview-section">
+            <div class="preview-header">
+                <h2>Podgląd danych</h2>
+                <span id="preview-count"></span>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="preview-table">
+                    <thead id="preview-table-head"></thead>
+                    <tbody id="preview-table-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 

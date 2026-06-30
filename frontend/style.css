@@ -15,9 +15,11 @@ body {
     color: var(--text);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 100vh;
     margin: 0;
+    padding: 2rem;
+    box-sizing: border-box;
 }
 
 .card {
@@ -26,7 +28,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     width: 100%;
-    max-width: 450px;
+    max-width: 1400px;
 }
 
 h1 {
@@ -92,12 +94,92 @@ button:disabled {
     font-size: 0.9rem;
 }
 
-.status-success { background-color: #d1fae5; color: #065f46; border: 1px solid var(--success); }
-.status-error { background-color: #fee2e2; color: #991b1b; border: 1px solid var(--error); }
-.status-loading { background-color: #e0f2fe; color: #075985; border: 1px solid var(--primary); }
+.status-success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid var(--success);
+}
+
+.status-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid var(--error);
+}
+
+.status-loading {
+    background-color: #e0f2fe;
+    color: #075985;
+    border: 1px solid var(--primary);
+}
 
 #results-list {
     margin-top: 10px;
     padding-left: 20px;
     font-size: 0.85rem;
+}
+
+#preview-section {
+    display: none;
+    margin-top: 2rem;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.preview-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+#preview-count {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+#preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px;
+    font-size: 0.85rem;
+}
+
+#preview-table th,
+#preview-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+#preview-table th {
+    background-color: #f1f5f9;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+#preview-table tr:hover td {
+    background-color: #f8fafc;
+}
+
+.secondary-btn {
+    margin-top: 0.75rem;
+    background-color: #475569;
+}
+
+.secondary-btn:hover {
+    background-color: #334155;
 }

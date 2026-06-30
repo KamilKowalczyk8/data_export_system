@@ -1,19 +1,27 @@
-from sqlalchemy import Column, Integer, String, Float, Enum as SqlEnum
-from app.infrastructure.database.database import Base
-from app.domain.enums.product_type import ProductType
+import datetime
 
-class ProductModel(Base):
+from sqlalchemy import Column, Integer, String, Float,  Enum as SqlEnum
+from datetime import datetime, timezone
+from sqlalchemy.dialects.postgresql import TIMESTAMP
+from sqlalchemy.sql import func
+from app.infrastructure.database.database import Base
+from app.domain.enums.product_preview_status import ProductPreviewStatus
+
+class ProductPreviewModel(Base):
     """
-    Model SQLAlchemy odzwierdziedlająca tabele w bazie postgresql
+    Tabela tymczasowa produktów po imporcie z pliku.
+    Dane trafiają tutaj najpierw, są pokazywane na froncie,
+    a dopiero po zatwierdzeniu mogą trafić do tabeli docelowej dostawcy.
     """
-    __tablename__ = "products"                  # nazwa tabeli w bazie
+    __tablename__ = "import_preview_products"   # nazwa tabeli w bazie
 
     id = Column(Integer, primary_key=True, index=True)
 
+    import_id = Column(String, nullable=False, index=True)
     supplier_id = Column(String, nullable=False, index=True)
-    product_key = Column(String, unique=True, index=True, nullable=False)  # dostawca-kolekcja-indeks-rodzaj bryły-oznaczenie frontów-kolor
+    product_key = Column(String, unique=False, index=True, nullable=False)  # dostawca-kolekcja-indeks-rodzaj bryły-oznaczenie frontów-kolor
 
-    solid_index = Column(String, unique=True, index=True, nullable=False)  # indeks bryły
+    solid_index = Column(String, unique=False, index=True, nullable=False)  # indeks bryły
     #product_type = Column(SqlEnum(ProductType, name="product_type_enum", native_enum="False", nullable="False", index="True"))  # Twarde(szafa) czy miekkie(wersalka)
 
     collection = Column(String, index=True)     # nazwa kolekcji
@@ -39,4 +47,29 @@ class ProductModel(Base):
     bed_frame_material = Column(String)         # materiał stelaż łóżka
     shelf_material = Column(String)             # materiał szafki ewentualnie z grubością
     equipment_product = Column(String)          # wyposażenie produktu
+
+    status = Column(
+            SqlEnum(
+                ProductPreviewStatus,
+                name="product_preview_status",
+                values_callable=lambda enum_class: [item.value for item in enum_class],
+                native_enum=False,
+            ),
+            nullable=False,
+            index=True,
+            default=ProductPreviewStatus.PREVIEW.value
+    )
+
+    created_at = Column(
+        TIMESTAMP(timezone=True, precision=0),
+        server_default=func.now(),
+        nullable=False
+    )
+
+    updated_at = Column(
+        TIMESTAMP(timezone=True, precision=0),
+        server_default=func.now(),
+        onupdate=lambda: datetime.now(timezone.utc).replace(microsecond=0),
+        nullable=False
+    )
 

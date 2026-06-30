@@ -39,7 +39,7 @@ class FileImporter:
         """
         try:
             df = pd.read_csv(self.file_path, delimiter=delimiter, encoding=encoding)     # pd.read_csv(...) to biblioteka do czytania plików tekstowych
-                                                                                        # delimiter to jak dostawca oddzielił kolumny między sobą ;
+                                                                                         # delimiter to jak dostawca oddzielił kolumny między sobą ;
             return {"default_csv_data": df}                 # oszukujemy nasz system tworzymy zakładke gdyż system oczekuje zakładki i nazywamy ją default_csv_data i podpinamy pod nią tabele (df)
         except Exception as e:
             print(f"Błąd odczytania pliku CSV: {e}")
