@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers import import_router
 from app.infrastructure.database.database import Base, engine
-from app.infrastructure.database.db_models.product_model import ProductModel
 
 def create_app() -> FastAPI:
     """

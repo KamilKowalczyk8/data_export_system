@@ -35,6 +35,8 @@ class ProductPreviewModel(Base):
     height_block = Column(Float)                # wysokość
     depth_block = Column(Float)                 # głębokość
 
+    base_price = Column(Float)                  # cena bazowa z pliku
+
     number_doors = Column(Float)                # liczba drzwi
     number_drawers = Column(Float)              # liczba szuflad
 
