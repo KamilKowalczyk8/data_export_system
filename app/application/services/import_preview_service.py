@@ -1,12 +1,12 @@
 import os
-import re
 import uuid
 from typing import Dict, Any
 
 from app.infrastructure.importers.file_importer import FileImporter
-from app.application.parsers.excel_parser import ExcelParser
 from app.infrastructure.repositories.product_preview_repository import ProductPreviewRepository
-from app.application.config.field_types import FLOAT_FIELDS
+from app.application.helpers.data_cleaner import clean_value, clean_field_value
+from app.application.helpers.key_builder import build_product_key
+from app.application.parsers.parser_factory import get_parser_for_supplier
 
 class ImportPreviewService:
     """
@@ -57,7 +57,7 @@ class ImportPreviewService:
             for product_data in processed_data:
                 product_data["import_id"] = import_id
                 product_data["supplier_id"] = supplier_id
-                product_data["product_key"] = self._build_product_key(product_data)
+                product_data["product_key"] = build_product_key(product_data)
 
             save_result = self.product_preview_repository.save_products(processed_data) # zapisuejmy do zmiennej nasz wynik
 
@@ -92,34 +92,6 @@ class ImportPreviewService:
 
     # Prywatne metody używane zaczynają się od _nazwa metody
 
-    def _build_product_key(self, product_data: dict) -> str:    # funkcja budująća nasz product_key
-        parts = [                                               # częsci z jakich będzie sie składał
-            product_data.get("supplier_id"),
-            product_data.get("collection"),
-            product_data.get("solid_index"),
-            product_data.get("solid_type"),
-            product_data.get("marking_fronts"),
-            product_data.get("color"),
-        ]
-        clean_parts = []
-
-        for part in parts:
-            if part is None:
-                part = "brak"
-
-            part = str(part).strip().upper()            # bierzemy stringi z danymi i zmieniamy na DUŻA LITERE
-
-            if part == "":
-                part = "brak"
-
-            part = part.replace(" ", "_")
-            part = part.replace(",", "_")
-            part = part.replace("\\", "_")
-
-            clean_parts.append(part)                    # dodajemy na koniec czystej listy kazdy przetworzony element
-
-        return " - ".join(clean_parts)
-
     def _read_excel(self, importer: FileImporter, profil: dict) -> dict:
         """ Metoda dla odczytu plików Excel """
         return importer.load_all_sheets()
@@ -131,125 +103,45 @@ class ImportPreviewService:
             encoding=profil.get("encoding", "utf-8")
         )
 
-    def _clean_value(self, value):          # ta metoda czyści nie zapisuje wartosci jesli któres z tych warunków sie zdarzy np będzie puste pole
-        """
-        Czyści pojedynczą wartośc String z pliku puste wartosci zamienai na None
-        """
-
-        if value is None:
-            return None
-
-        value = str(value).strip()
-
-        if value == "":
-            return None
-
-        if value.lower() in ["nan", "none", "null"]:
-            return None
-
-        return value
-
-    def _clean_float_value(self, value):    # odpowiednik tej funkcji wyżej ale dla floatów
-        """
-        Czyści wartości liczbowe
-        obsługuje:
-            - "44.0 kg"
-            - "79,5 kg"
-            - "209 cm -> 209 -> 209.0"
-            - "3"
-            - "1,0"
-        Jeśli nie da się odczytać liczby, zwraca None.
-        """
-
-        if value is None:
-            return None
-
-        value = str(value).strip()                      # zamienia wartosc na tekst i usuwa spacje z przodu i z tyłu
-
-        if value == "":
-            return None
-
-        if value.lower() in ["nan", "none", "null"]:    # jesli plik lub pandas zwróci któryś z tych wartosci to traktujemy to jako brak wartosci
-            return None
-
-        value = value.lower()                             # zamieniamy tekst na małe litery
-        value = value.replace(",", ".")          # zamieniamy , na . gdyż python potrzebuje kroppki do zrobienia wartosci float
-
-        match = re.search(r"\d+(\.\d+)?", value)   #słuzy do znajdowanai cyfry w teksice \d+ to zajduje np 10 a \.(\d+ znajduje 0.5 co daje nam całośc 10.5
-
-        if not match:                                     # jesli nie znaleziono liczby wyrzyca None
-            return None
-
-        return float(match.group())                       # zwracasz znalezioną liczbe float
-
-    def _clean_field_value(self, field_name, value):
-        """
-        czysci pola zaleznie od pola modeli string lub flaot
-        pola z FLOAT_FIELDS czsyci jako float
-        a pozostałe jako string
-        """
-        if field_name in FLOAT_FIELDS:
-            return self._clean_float_value(value)
-
-        return self._clean_value(value)
-
 
     def _map_data(self, sheets_data: dict, active_profile: dict) -> list:   # _ prywatna metoda
-        """ Prywatna metoda pomocznicza do mapowania danych """
+        """
+        Główna metoda dystrybucyjna. Wybiera odpowiedni parser na podstawie profilu,
+        odbiera surowe dane i przepuszcza je przez logikę czyszczącą.
+        """
         results = []
         if not sheets_data:                                                 # sprawdzenie czy otrzymaliśmy dane
             return results                                                  # jesli nie zwraca pustą liste
 
-        mapping = active_profile.get("mapping")                             # pobiera z profilu słownik mapowania
+        supplier_id = active_profile.get("supplier_id")
 
-        for sheet_name, df in sheets_data.items():                          # przechodzi przez arkusze każde w excelu
-            if active_profile.get("skip_guillotine", False):    # sprawdza flage czy jest do skipowania gilotyny
-                clean_df = df                                               # ta metoda bierze dane takie jakie przyszły
-            else:
-                parser = ExcelParser(df, sheet_name)                        # powołuje do zycia nasza gilotyne która obcina zbędne dane
-                clean_df = parser.clean_dataframe()
+        for sheet_name, df in sheets_data.items():
+            parser = get_parser_for_supplier(
+                supplier_id, df, sheet_name, active_profile
+            )
 
-            if clean_df.empty:                                              # sprwadza czy plik po czysczeniu jesli jest pusty pomijam ten arkusz i ide dalej
-                continue
+            raw_parsed_data = parser.parse()
 
-            print("Prawdziwa nazwa kolumny po odczycie:", [repr(col) for col in clean_df.columns], flush=True) # logi diagnostyczne
-            print("Profil dostawcy:", mapping, flush=True)                                                     # flush=True wymaga pokazanie logu w dockerze
-            print("Pierwsze wiersze pliku:", clean_df.head().to_string(), flush=True)
+            for raw_product in raw_parsed_data:
+                clean_product = {}
 
-            solid_index_source_column = mapping.get("solid_index")          # pobieramy z mapingu pole solid_index
+                raw_solid_index = raw_product.get("solid_index")
+                solid_index = clean_value(raw_solid_index)
 
-            if not solid_index_source_column:
-                raise ValueError("Profil dostawcy nie ma mapowania dla pola solid_index.")
-
-            if solid_index_source_column not in clean_df.columns:           # obsługa błędu jesli brakuje indeksu bryły
-                raise ValueError(
-                    f"Brakuje kolumny z indeksem bryły: {solid_index_source_column}. "
-                    f"Dostępne kolumny: {list(clean_df.columns)}"
-                )
-
-            for _, row in clean_df.iterrows():                              # przechodzimy po kazdym wierszu tabeli _ oznacza indeks wiersza a row oznacza dane jednego produktu
-                raw_solid_index = row[solid_index_source_column]            # pobieramy z wiersz surowy indeks bryły
-                solid_index = self._clean_value(raw_solid_index)            # czyscimy surowa wartość z pustych poł np spacji przed po
-
-                if not solid_index:                                         # jesli nie mamy indeksu bryły pomijamy taki wiersz
+                if not solid_index:
                     continue
 
-                product_data = {                                            # tworzymy słownik produktu i wpisujemy do niego indeks bryły bo juz go pobralismy i wyczyscilismy ze smieci
-                    "solid_index": solid_index
-                }
+                clean_product["solid_index"] = solid_index
 
-                for model_field, source_name in mapping.items():            # przechodzisz po kazdym elemmencie mapingu dla kazdego pola modelu szuka odpowiedniego pola w pliku dostawcy
-                    if model_field == "solid_index":                        # przez to że juz solid_index przerobilismy pomijamy go bo juz go mamy
+                for field_name, raw_value in raw_product.items():
+                    if field_name == "solid_index":
                         continue
 
-                    if source_name not in clean_df.columns:                 # sprawdzamy  czy kolumna z profilu fakytycznie istnieje
-                        product_data[model_field] = None                    # jesli nie ma zapisujesz none
-                        continue                                            # przechodzisz dalej
+                    clean_product[field_name] = clean_field_value(
+                        field_name, raw_value
+                    )
 
-                    raw_value = row[source_name]                                            # pobierasz surową wartość z pliku
-                    product_data[model_field] = self._clean_field_value(model_field, raw_value)   # czyscimy nasza wartość np z pustych pól
-
-                results.append(product_data)                                # dodaje gotowy produkt do listy wyników
+                results.append(clean_product)  # dodaje gotowy produkt do listy wyników
 
         return results
 

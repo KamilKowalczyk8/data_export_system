@@ -176,7 +176,7 @@ function renderPreviewTable(rows) {
             const td = document.createElement("td");
             const value = row[column];
 
-            td.textContent = formatCellValue(value);
+            td.textContent = formatCellValue(value, column);
             tr.appendChild(td);
         });
 
@@ -191,12 +191,30 @@ function clearPreviewTable() {
     previewSection.style.display = "none";
 }
 
-function formatCellValue(value) {
+function formatCellValue(value, columnName) {
     if (value === null || value === undefined || value === "") {
         return "-";
     }
+    if (columnName === "created_at" || columnName === "updated_at") {
+        return formateDate(value);
+    }
 
     return value;
+}
+
+function formateDate(isoString) {
+    if (!isoString) return "-";
+
+    const data = new Date(isoString);
+
+    return data.toLocaleString('pl-PL', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
 }
 
 

@@ -43,8 +43,8 @@ PROFILE = {
 
     "mapping": {
         "solid_index": "product_name_pattern",
-        "collection": "collection",
-        "color": "color",
+        "collection": "collection_cell",
+        "color": "color_cell",
         "front_color": "front_color",
         "height_block": "height_block",
         "width_block": "width_block",

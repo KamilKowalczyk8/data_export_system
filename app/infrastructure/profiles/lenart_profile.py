@@ -1,8 +1,8 @@
 PROFILE = {
     "supplier_id": "LENART",        # nazwa kolekcji
     "file_type": "csv",             # typ pliku
-    "delimiter": ",",               # CSV polskich dostawców najczęściej używa średnika
-    "encoding": "utf-8",
+    "delimiter": ";",               # CSV polskich dostawców najczęściej używa średnika
+    "encoding": "utf-16",
     "allowed_sheets": [None],
     "skip_guillotine": True,
     "mapping": {
