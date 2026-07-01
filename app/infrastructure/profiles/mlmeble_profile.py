@@ -8,9 +8,14 @@ PROFILE = {
         "parser_type": "ml_meble_block",
         "show_sheet_select": True,
 
+        # Kolekcja jest w komórce A1, np. SANDRO.
         "collection_cell": "A1",
+
+        # Kolorystyka jest w komórce A2.
+        # Tam może być Korpus, Blat, Front.
         "color_cell": "A2",
 
+        # Nazwa produktu typu SANDRO 01, SANDRO 02, SANDRO 30
         "product_name_pattern": r"^[A-ZĄĆĘŁŃÓŚŹŻ ]+\s\d{1,3}$",
         "product_name_search_columns": [2, 3],
 
@@ -25,6 +30,7 @@ PROFILE = {
         },
 
         "package_number_column": 5,
+        # Nazwa produktu typu SANDRO 01, SANDRO 02, SANDRO 30
         "package_number_pattern": r"\d+\/(\d+)",
 
         "price_column": 12,
@@ -36,7 +42,7 @@ PROFILE = {
     },
 
     "mapping": {
-        "solid_index": "solid_index",
+        "solid_index": "product_name_pattern",
         "collection": "collection",
         "color": "color",
         "front_color": "front_color",
